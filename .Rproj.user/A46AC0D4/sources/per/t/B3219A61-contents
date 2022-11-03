@@ -1,0 +1,953 @@
+--- 
+### ESSE É O MEU PRIMEIRO APLICATIVO WEB
+### DASHBOARD INTERATIVO PARA MUVA - CONSIDER
+title: "MUVA CONSIDERA"
+output:   
+  flexdashboard::flex_dashboard:
+    #logo: "ANM-0150-Ligada-Muva-Identidade-Logo-160829-F-hi-01 (2) (4).png"
+    vertical_layout: fill 
+    theme:
+      bg: "#000000"
+      fg: "#FDF7F7" 
+      primary: "#5CD6C7" ## TELA PRINCIPAL - VAMOS COLOCAR CORES DA MUVA
+      base_font:
+        google: Prompt
+      code_font:
+        google: JetBrains Mono
+    orientation: row 
+    ###vertical_layout: fill
+    #source_code: embed
+    social: ["twitter", "facebook", "linkedin" ]
+navbar:
+      - { title: "MUVA", href: "https://twitter.com/MUVA_Moz", align: right }
+      - { title: "MUVA", href: "www.facebook.com/MUVA.Moz/", align: right}
+      - { icon: fa-address-card, href: "https://mz.linkedin.com/company/muvamoz", align: right }
+
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(knitr)
+library(DT)
+library(rpivotTable)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(openintro)
+library(highcharter)
+library(ggvis)
+library(readr)
+library(tidyverse)
+ library(readxl)
+library(shiny)
+library(knitr) 
+
+if(!require('stringr')) {
+  install.packages('stringr')
+  library('stringr')
+}
+library(ggthemes)
+ produtores_Consider <- read_excel("produtores_Consider.xlsx")
+ parceiros <- read_excel("parceiros.xlsx")
+ parceiros_inst <- read_excel("parceiros_inst.xlsx")
+ 
+ parceiros_unique <- read_excel("parceiros_unique.xlsx")
+ parceiros_present <- read_excel("parceiros_present.xlsx", 
+    col_types = c("text", "text", "text", 
+        "text", "text", "numeric", "text", 
+        "text", "numeric", "numeric", "text", 
+        "numeric"))
+ comunidaderesumo <- read_excel("comunidaderesumo.xlsx")
+ comunidadelista <- read_excel("comunidadelista.xlsx")
+ comunidadetotal<- read_excel("comunidadetotal.xlsx")
+ participantes_Produtores<- read_excel("participantes_Produtores.xlsx")
+ photo_Produtores<- read_excel("photo_Produtores.xlsx")
+ sempre_presente<-read_excel("sempre_Presentes.xlsx")
+ desistentes<-read_excel("desistentes.xlsx")
+#"C:\Users\Dercio\OneDrive - Oxford Policy Management Limited\Ferramentas de Consider\04 Data Clean\Sessao01_comunitaria_Chimanimani.xlsx"
+
+dados = produtores_Consider %>% 
+  filter((produtores_Consider$presenca=="SIM" | produtores_Consider$presenca=="NAO")) 
+
+parceiros_go=parceiros %>% filter(parceiros$Regiao=="GORONGOSA")
+parceiros_ch=parceiros %>%filter(parceiros$Regiao=="CHIMANIMANI")
+ 
+dados_gorongosa = dados %>% filter(dados$Regiao=="GORONGOSA")
+dados_chimanimani = dados %>% filter(dados$Regiao=="CHIMANIMANI")
+   
+ 
+```
+
+```{r}
+#==================================================================================
+#### SECCAO DE DADOS GERAIS
+#==================================================================================
+```
+
+# OVERVIEW {data-navmenu="RESUMO"}
+
+## Comandos2 {.sidebar}
+
+NESSE PAINEL APRESENTAMOS DADOS GERAIS DO PROJECTO CONSIDERA
+
+```{r}
+
+  hr()
+```
+
+O Projecto Considera esta sendo implementado em Chimanimani e Gorongosa
+
+## Column {data-width="200"}
+
+### TOTAL PRODUTORES
+
+```{r}
+Total_produtores= dados %>% 
+  filter(nrSessao==1) %>% 
+  group_by(Regiao) %>%
+  summarise(Quantidade = n())
+
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(Total_produtores$Quantidade),caption="TOTAL DE PRODUTORES",icon ="fas fa-user-circle", color ="#F77333")
+```
+
+### FEMININO
+
+```{r}
+Fe= dados %>% 
+  filter(Sexo=="FEMININO",nrSessao==1) %>% 
+  group_by(Regiao) %>%
+  summarise(Quantidade = n())
+#Quantos produtores temos em Gorongosa do sexo Feminino}
+valueBox(sum(Fe$Quantidade),caption="PRODUTORAS DO SEXO FEMININO",icon = "fas fa-venus", color = "#9442D4")
+```
+
+## Column {data-width="200"}
+
+### TOTAL DE PRODUTORES LIDERES
+
+```{r}
+Plider= dados   %>% 
+  filter(ProdutorLider=="SIM",nrSessao==1) %>% 
+  group_by(Regiao) %>%
+  summarise(Quantidade = n())
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(Plider$Quantidade),caption="TOTAL DE PRODUTORES LIDERES",icon ="fas fa-user-circle", color = "#F77333")
+```
+
+### TOTAL DE PRODUTORES LIDERES DO SEXO FEMININO
+
+```{r}
+Plider_F= dados   %>% 
+  filter(ProdutorLider=="SIM",nrSessao==1,Sexo=="FEMININO") %>% 
+  group_by(Regiao) %>%
+  summarise(Quantidade = n()) 
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(Plider_F$Quantidade),caption="PRODUTORAS LIDERES DO SEXO FEMININO",icon = "fas fa-venus", color = "#9442D4")
+```
+
+## Column {data-width="200"}
+
+### Total de parceiros(as)
+
+```{r}
+parceiro_Total= parceiros_unique %>%
+  group_by(Regiao, Sexo) %>%
+  summarise(Quantidade = n())
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(parceiro_Total$Quantidade),caption="TOTAL DE PARCEIROS",icon ="fas fa-user-circle", color = "#F77333")
+```
+
+### Total de parceiros de sexo Feminino que participam dos Workshoop
+
+```{r}
+Fparceiro_Total= parceiros_unique   %>% filter(parceiros_unique$Sexo=="FEMININO") %>%
+  group_by(Sexo) %>%
+  summarise(Quantidade = n())  
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(round(Fparceiro_Total$Quantidade, digits = 0),caption="TOTAL DE PARCEIROS DO SEXO FEMININO",icon = "fas fa-venus", color = "#9442D4")
+```
+
+## Column {data-width="200"}
+
+### comunidade
+
+```{r}
+hr()
+ valueBox(sum(comunidadetotal$totalHOMENS)+sum(comunidadetotal$totalHOMENS),caption="TOTAL DE PARTICIPANTES (ADULTOS) NA COMUNIDADE",icon ="fas fa-user-circle", color = "#F77333")
+```
+
+### COMUNIDADE MULHERES
+
+```{r}
+valueBox(sum(comunidadetotal$totalMULHERES),caption="TOTAL DE PARTICIPANTES (ADULTAS) DO SEXO FEMININO NA COMUNIDADE",icon = "fas fa-venus", color = "#9442D4")
+```
+
+## Column {data-width="200"}
+
+### TOTAL DE DESISTENTES
+
+```{r}
+Desistentes_Total= desistentes  %>% 
+  group_by(Sexo) %>%
+  summarise(Quantidade = n())  
+valueBox(sum(Desistentes_Total$Quantidade) ,caption="TOTAL DE DESISTENTES",icon ="fas fa-user-circle", color = "#F77333")
+```
+
+### DESISTENTES DO SEXO FEMININO
+
+```{r}
+Desistentes_F= Desistentes_Total  %>% 
+  filter(Sexo=="FEMININO")
+    
+valueBox(sum(Desistentes_F$Quantidade) ,caption="TOTAL DE DESISTENTES DO SEXO FEMININO",icon ="fas fa-venus", color = "#9442D4")
+```
+
+```{r}
+#########################GORONGOSA-GERAL######################################
+```
+
+# POR REGIÃO {data-navmenu="RESUMO"}
+
+## Comandos2 {.sidebar}
+
+NESSE PAINEL APRESENTAMOS DADOS GERAIS DO PROJECTO CONSIDERA
+
+```{r}
+
+  hr()
+```
+
+O Projecto Considera esta sendo implementado em Chimanimani e Gorongosa
+
+```{r}
+  
+fluidPage(
+hr(),
+
+  radioButtons("RegiaoProdutor", label =  ("Selecione a Região"), 
+               choices = unique(dados$Regiao), selected = NULL), 
+  hr()  
+)
+```
+
+## Column {data-width="200"}
+
+### TOTAL PRODUTORES
+
+```{r}
+renderValueBox({
+ 
+ Total_produtores_G<- Total_produtores %>%
+  na.omit() %>%
+  filter(Regiao%in% input$RegiaoProdutor) #%>% 
+   #summarize(avg_Number = sum(Total_participantes))
+valueBox(value = sum(Total_produtores_G$Quantidade),caption="TOTAL DE PRODUTORES",icon ="fas fa-user-circle", color ="#F77333")
+})
+  
+```
+
+### FEMININO
+
+```{r}
+renderValueBox({
+Fe_G= Fe %>% na.omit() %>%
+  filter(Regiao %in% input$RegiaoProdutor)
+#Quantos produtores temos em Gorongosa do sexo Feminino}
+valueBox(sum(Fe_G$Quantidade),caption="PRODUTORES DO SEXO FEMININO",icon = "fas fa-venus", color = "#9442D4")
+})
+```
+
+## Column {data-width="200"}
+
+### TOTAL DE PRODUTORES LIDERES
+
+```{r}
+renderValueBox({
+Plider_G= dados  %>%   filter(Regiao%in% input$RegiaoProdutor) %>% filter(ProdutorLider=="SIM",nrSessao==1)  %>%
+  group_by(Regiao) %>%
+  summarise(Quantidade = n())
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(Plider_G$Quantidade),caption="TOTAL DE PRODUTORES LIDERES",icon ="fas fa-user-circle", color = "#F77333")
+})
+```
+
+### TOTAL DE PRODUTORES LIDERES DO SEXO FEMININO
+
+```{r}
+renderValueBox({
+Plider_F_G= dados  %>% filter(Regiao%in% input$RegiaoProdutor) %>% filter(ProdutorLider=="SIM",nrSessao==1, Sexo=="FEMININO")  %>%
+  group_by(Regiao) %>%
+  summarise(Quantidade = n()) 
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(Plider_F_G$Quantidade),caption="PRODUTORES LIDERES DO SEXO FEMININO",icon = "fas fa-venus", color = "#9442D4")})
+```
+
+## Column {data-width="200"}
+
+### Total de parceiros(as)
+
+```{r}
+renderValueBox({
+parceiro_Total_G= parceiros_unique %>% filter(Regiao %in% input$RegiaoProdutor)  %>%
+  group_by(Regiao) %>%
+  summarise(Quantidade = n())
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(parceiro_Total_G$Quantidade),caption="TOTAL DE PARCEIROS",icon ="fas fa-user-circle", color = "#F77333")})
+```
+
+### Total de parceiros(as) de sexo Feminino que participam dos Workshoop
+
+```{r}
+renderValueBox({
+Fparceiro_Total_G= parceiros_unique   %>% filter(parceiros_unique$Sexo=="FEMININO") %>% filter(Regiao %in% input$RegiaoProdutor) %>% 
+  group_by(Regiao) %>%
+  summarise(Quantidade = n())  
+#Quantos produtores temos em Gorongosa do sexo Feminino
+valueBox(sum(Fparceiro_Total_G$Quantidade),caption="TOTAL DE PARCEIROS DO SEXO FEMININO",icon = "fas fa-venus", color = "#9442D4")})
+```
+
+## Column {data-width="200"}
+
+### comunidade
+
+```{r}
+renderValueBox({
+comunidadetotal_G = comunidadetotal %>% filter(Regiao %in% input$RegiaoProdutor)
+valueBox(sum(comunidadetotal_G$totalHOMENS)+sum(comunidadetotal_G$totalMULHERES),caption="TOTAL DE PARTICIPANTES (ADULTOS) NA COMUNIDADE",icon ="fas fa-user-circle", color = "#F77333")})
+ 
+```
+
+### COMUNIDADE MULHERES
+
+```{r}
+renderValueBox({
+comunidadetotal_G = comunidadetotal %>% filter(Regiao %in% input$RegiaoProdutor)
+valueBox(sum(comunidadetotal_G$totalMULHERES),caption="TOTAL DE PARTICIPANTES (ADULTAS) DO SEXO FEMININO NA COMUNIDADE",icon = "fas fa-venus", color = "#9442D4")
+})
+```
+
+## Column {data-width="200"}
+
+### TOTAL DE DESISTENTES
+
+```{r}
+renderValueBox({
+Desistentes_Total_G= desistentes  %>% filter(Regiao %in% input$RegiaoProdutor) %>%
+  group_by(Sexo) %>%
+  summarise(Quantidade = n())  
+valueBox(sum(Desistentes_Total_G$Quantidade) ,caption="TOTAL DE DESISTENTES",icon ="fas fa-user-circle", color = "#F77333")
+})
+```
+
+### DESISTENTES DO SEXO FEMININO
+
+```{r}
+renderValueBox({
+Desistentes_F_G= desistentes  %>% filter(Sexo=="FEMININO")  %>% filter(Regiao %in% input$RegiaoProdutor)  %>% 
+   group_by(Regiao) %>%
+  summarise(Quantidade = n())
+    
+valueBox(sum(Desistentes_F_G$Quantidade),caption="TOTAL DE DESISTENTES DO SEXO FEMININO",icon ="fas fa-venus", color = "#9442D4")})
+```
+
+```{r}
+#########################CHIMANIMANI-GERAL######################################
+```
+
+# AGREGADO {data-icon="fa-signal" data-navmenu="PRODUTORES"}
+
+## Comandos1 {.sidebar}
+
+```{r}
+fluidPage(
+  markdown("NESSE PAINEL APRESENTAMOS OS DADOS AGREGADOS DAS SESSÕES DOS PRODUTORES"),
+   hr())
+```
+
+```{r}
+ fluidPage(
+  markdown("Na Janela ao lado mostramos 
+  a percentagem de: \n * PRESENÇA - Presença dos 
+      produtores nas sessões \n * PHOTOVOICE -Produtores que realizaram \n as 
+      actividades de photovoice em cada sessão \n * PARTICIPAÇÃO - Produtores que falam nas sessões  \n
+A linha preta representa a média na respectiva comunidade \n
+VEJA AS PERCENTAGENS PASSANDO O MOUSE NOS GRAFICOS"
+))
+ 
+```
+
+## Column {.tabset data-width="1000"}
+
+```{r}
+fluidPage(
+  radioButtons("regiaocheck", label =("Selecione a Região"), 
+               choices =unique(dados$Regiao)),
+   hr()
+  )
+```
+
+### PRESENÇAS
+
+```{r}
+ 
+options(dplyr.summarise.inform = FALSE)
+tab_freq_ag <- dados %>%
+  group_by(nrSessao, Regiao, Sexo, presenca) %>%
+  summarise(n = n()) %>% mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% ungroup()  
+ 
+ renderPlotly({
+  g=filter(tab_freq_ag, tab_freq_ag$Regiao==input$regiaocheck, presenca=="SIM") %>% mutate(media=round(mean(Percentagem),digits = 0))  %>%  ggplot(., aes(x =nrSessao , y=Percentagem,  color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores presentes nas sessões %",x="Numero de Sessões")+theme_bw(base_size =14, base_line_size =11/22, base_rect_size = 11/22  )+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8)) + geom_hline(aes(yintercept = media))+ ggtitle("Produtores presente nas sessões")
+  
+   ggplotly(g) 
+})
+```
+
+### PHOTOVOICE
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_freq_c_foto_ag <- dados %>%
+  filter(presenca=="SIM",nrSessao!=1) %>%
+  group_by(nrSessao, Regiao, Sexo,  photovoice) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+ 
+renderPlotly({
+  g=filter(tab_freq_c_foto_ag, tab_freq_c_foto_ag$photovoice=="SIM", tab_freq_c_foto_ag$Regiao==input$regiaocheck) %>% mutate(media=round(mean(Percentagem),digits = 0)) %>% ggplot(., aes(x =nrSessao , y=Percentagem,   color=as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores que realizaram photovoice %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+theme_update(panel.grid.minor = element_line(colour = "red"))+ ggtitle("Produtores que realizaram actividade de photovoice")
+  ggplotly(g) 
+}  )
+```
+
+### PARTICIPAÇÃO
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_freq_CH_eng_ag <- dados %>%
+  filter(presenca=="SIM") %>%
+  group_by(nrSessao, Regiao, Sexo,  nivel_engajamento) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_CH_eng_ag, Regiao==input$regiaocheck, nivel_engajamento=="ENGAJAD@") %>% mutate(media=round(mean(Percentagem),digits = 0)) %>% ggplot(., aes(x =nrSessao , y=Percentagem,   color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores que Falam nas sessões %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+ ggtitle("Produtores que falam nas sessões")
+  ggplotly(g) 
+}  )
+
+```
+
+```{r}
+###DADOS DE GORONGOSA
+```
+
+# GORONGOSA {data-icon="fa-signal" data-navmenu="PRODUTORES"}
+
+## Comandos8 {.sidebar}
+
+```{r}
+ fluidPage(
+  markdown("Na Janela ao lado mostramos 
+  a percentagem de: \n * PRESENÇA - Presença dos 
+      produtores nas sessões \n * PHOTOVOICE -Produtores que realizaram \n as 
+      actividades de photovoice em cada sessão \n * PARTICIPAÇÃO - Produtores que falam nas sessões  \n
+A linha preta representa a média na respectiva comunidade \n
+VEJA AS PERCENTAGENS PASSANDO O MOUSE NOS GRAFICOS"
+))
+ 
+```
+
+## Column {.tabset data-width="1000"}
+
+```{r}
+fluidPage(
+
+  radioButtons("comunidadecheck", label =  ("Selecione a Comunidade"), 
+               choices = unique(dados_gorongosa$Comunidade), selected = "GORONGOSA-NHAMU"),
+  hr() 
+  
+)
+```
+
+### PRESENÇAS
+
+```{r}
+# You can access the values of the widget (as a vector)
+# with input$checkGroup, e.g.
+options(dplyr.summarise.inform = FALSE)
+tab_freq_g <- dados_gorongosa %>%
+  group_by(nrSessao, Comunidade, Sexo, presenca) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_g,  tab_freq_g$Comunidade==input$comunidadecheck, presenca=="SIM") %>% mutate(media=round(mean(Percentagem)))%>% ggplot(., aes(x =nrSessao , y=Percentagem, color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Presenças %",x="Numero de Sessoes")+theme_bw()+geom_point(shape = "circle small", size = 1.5)+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media)) + ggtitle("Produtores presente nas sessões") 
+  ggplotly(g) 
+} )
+
+#geom_line(size = 0.5  position="dodge",     
+```
+
+### PHOTOVOICE
+
+```{r}
+
+options(dplyr.summarise.inform = FALSE)
+tab_freq_g_foto <- dados_gorongosa %>%
+  filter(dados_gorongosa$presenca=="SIM",dados_gorongosa$nrSessao!=1) %>%
+  group_by(nrSessao, Comunidade, Sexo,  photovoice) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_g_foto, tab_freq_g_foto$photovoice=="SIM", tab_freq_g_foto$Comunidade==input$comunidadecheck)%>% mutate(media=round(mean(Percentagem))) %>% ggplot(., aes(x =nrSessao , y=Percentagem,   color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores que realizaram photovoice %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+ ggtitle("Produtores que realizaram actividade de photovoice")
+  ggplotly(g) 
+}  ) 
+```
+
+### PARTICIPAÇÃO
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_freq_g_eng <- dados_gorongosa %>%
+  filter(presenca=="SIM") %>%
+  group_by(nrSessao, Comunidade, Sexo,  nivel_engajamento) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_g_eng,tab_freq_g_eng$Comunidade==input$comunidadecheck, nivel_engajamento=="ENGAJAD@" ) %>% mutate(media=round(mean(Percentagem))) %>%
+    ggplot(., aes(x =nrSessao, y=Percentagem, color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores que falam nas sessões %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+ ggtitle("Produtores que falam nas sessões")
+   
+  ggplotly(g) 
+}  )
+```
+
+```{r}
+#PRODUTORES DE CHIMANIMANI
+```
+
+# CHIMANIMANI {data-icon="fa-signal" data-navmenu="PRODUTORES"}
+
+## Comandos8 {.sidebar}
+
+```{r}
+ fluidPage(
+  markdown("Na Janela ao lado mostramos 
+  a percentagem de: \n * PRESENÇA - Presença dos 
+      produtores nas sessões \n *PHOTOVOICE -Produtores que realizaram \n as 
+      actividades de photovoice em cada sessão \n *PARTICIPAÇÃO - Produtores que falam nas sessões  \n
+A linha preta representa a média na respectiva comunidade \n
+VEJA AS PERCENTAGENS PASSANDO O MOUSE NOS GRAFICOS"
+))
+ 
+```
+
+## Column {.tabset data-width="800"}
+
+```{r}
+fluidPage(radioButtons("comunidadecheckCH", label =  ("Selecione a Comunidade"),choices = unique(dados_chimanimani$Comunidade), selected = "CHIMANIMANI-MPUNGA"))
+```
+
+### PRESENÇAS
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_freq_CH <- dados_chimanimani %>%
+  group_by(nrSessao, Comunidade, Sexo, presenca) %>%
+  summarise(n = n()) %>% mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_CH, tab_freq_CH$Comunidade==input$comunidadecheckCH, presenca=="SIM") %>% mutate(media=round(mean(Percentagem)))%>% ggplot(., aes(x =nrSessao , y=Percentagem,  color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores presentes nas sessões %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+ ggtitle("Produtores presente nas sessões")
+  ggplotly(g) 
+}  )
+
+# +
+#theme_classic()     
+
+```
+
+### PHOTOVOICE
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_freq_c_foto <- dados_chimanimani %>%
+  filter(presenca=="SIM",nrSessao!=1) %>%
+  group_by(nrSessao, Comunidade, Sexo,  photovoice) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_c_foto, tab_freq_c_foto$photovoice=="SIM", tab_freq_c_foto$Comunidade==input$comunidadecheckCH) %>% mutate(media=round(mean(Percentagem))) %>% ggplot(., aes(x =nrSessao , y=Percentagem,   color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores que realizaram photovoice %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+ ggtitle("Produtores que realizaram actividade de photovoice")
+  ggplotly(g) 
+}  )
+```
+
+### PARTICIPAÇÃO
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_freq_CH_eng <- dados_chimanimani %>%
+  filter(presenca=="SIM") %>%
+  group_by(nrSessao, Comunidade, Sexo,  nivel_engajamento) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100, Percentagem=round(freq, digits = 0)) %>% 
+  ungroup() 
+
+renderPlotly({
+  g=filter(tab_freq_CH_eng, Comunidade==input$comunidadecheckCH, nivel_engajamento=="ENGAJAD@" ) %>% mutate(media=round(mean(Percentagem))) %>%ggplot(., aes(x =nrSessao , y=Percentagem,   color =as.factor(Sexo)))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="SEXO")+ labs(y = "Produtores que Falam nas sessões %",x="Numero de Sessoes")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,100))+scale_x_continuous(limits=c(1,8))+ geom_hline(aes(yintercept = media))+ ggtitle("Produtores que falam nas sessões")
+  ggplotly(g) 
+}  )
+
+
+```
+
+```{r}
+############SESSAO DOS PARCEIROS###################
+```
+       
+# PRESENÇA {data-navmenu="PARCEIROS"}  
+
+## Comandos8 {.sidebar}
+
+```{r}
+fluidPage(("NESSE PAINEL APRESENTAMOS OS DADOS DOS WORKSHOOP COM PARCEIROS"),
+  hr()) 
+
+```
+
+```{r}
+
+fluidPage(radioButtons("REGIAOParc", label =  ("Selecione a Regiao"), 
+               choices = unique(parceiros$Regiao), selected = "CHIMANIMANI")
+)
+```
+
+```{r}
+ fluidPage(
+  markdown("As telas ao lado mostram o numero de parceiros que presentes e que realizaram as actividades de photovoice em cada sessão \n
+           
+           OS QUADRADINHOS PRETOS APRESENTAM O TOTAL DOS PARCEIROS POR SESSAO"
+  ))
+ 
+```
+
+
+
+## Column {data-width="200"}
+
+### PARCEIROS QUE PARTICIPAM EM TODAS AS SESSÕES
+
+```{r}
+renderValueBox({
+quantidade <- parceiros_present %>%
+  filter(Regiao %in% input$REGIAOParc) %>% 
+  group_by(Regiao) %>%
+  summarize(avg_Number =n())
+valueBox(value = quantidade$avg_Number, icon = "fa-users")
+})
+#Quantos produtores temos em Gorongosa do sexo Feminino
+```
+
+### PERCENTAGEM DE PARCEIROS DO SEXO FEMININO QUE PARTICIPAM EM TODAS AS SESSÕES
+
+```{r}
+renderValueBox({
+quantidade_T <- parceiros_present %>%
+  filter(Regiao %in% input$REGIAOParc) %>% 
+  group_by(Regiao) %>%
+  summarize(Number =n())    
+  
+quantidade <- parceiros_present %>%
+  filter(Regiao %in% input$REGIAOParc) %>% 
+   filter(Sexo %in% "FEMININO") %>%
+  group_by(Sexo) %>%
+  summarize(Number_1 =n())
+            #mutate(round(percent=Number_1/quantidade_T$Number,digits =1)*100)
+valueBox(value = list((round((quantidade$Number_1/quantidade_T$Number)*100,digits =1)), "%"), icon = "fa-users")
+ 
+})
+```
+
+### TOTAL DE PARCEIROS QUE REALIZARAM TODAS PHOTOVOICE
+
+```{r}
+renderValueBox({
+ 
+valueBox(value = "Sem dados", icon = "fa-users")
+})
+```
+
+### PERCENTAGEM DE PARCEIROS DO SEXO FEMININO QUE REALIZAM TODAS PHOTOVOICE
+ 
+
+```{r}
+renderValueBox({
+ valueBox(value = "Sem dados", icon = "fa-users" )
+})
+#, color ="#9442D4"
+```
+
+## Column {data-width="800"}
+
+### PRESENÇA NAS SESSÕES
+
+```{r}
+options(dplyr.summarise.inform = FALSE)
+tab_parceiros <- parceiros %>%
+  group_by(nrworkshoop, Regiao, Sexo) %>%
+  summarise(n = n()) %>%  mutate(Total=sum(n)) 
+
+renderPlotly({
+  g=filter(tab_parceiros, Regiao==input$REGIAOParc) %>% ggplot(., aes(x =nrworkshoop , y=n,   color =Sexo))+geom_line()+scale_color_manual(values = c("#9442D4","#F77333"), name="Sexo")+
+  theme(legend.position = "top")+ labs(y = "Numero de parceiros presentes",x="Numero de Sessões com parceiros")+theme_bw()+geom_point()+scale_y_continuous(limits=c(0,25))+scale_x_continuous(limits=c(1,4)) +geom_point(aes(x = nrworkshoop, y = Total), shape = 9,size = 1.8, colour = "#000000") +scale_shape_identity()+theme(legend.position = "top" )+ ggtitle("Parceiros presente nas sessões")
+  ggplotly(g)})
+```
+
+### PARCEIROS QUE REALIZAM PHOTOVOICE
+
+```{r}
+renderPlotly({
+  g= ggplot() +geom_text() +
+  annotate("text", label = "sem dados",
+    x =2, y = 5, size = 8, colour = "red" 
+  )+ ggtitle("Parceiros que realizaram photovoice") +xlim(0,4)+ylim(0,10)+ labs(y = "Numero de parceiros presentes",x="Numero de Sessões com parceiros")+theme_bw()  
+  ggplotly(g)})
+```
+
+# LISTA DE INSTITUIÇÕES PARCEIRAS {data-navmenu="PARCEIROS"}
+
+```{r}
+fluidPage(("NESSE PAINEL APRESENTAMOS OS DADOS DAS SESSÕES COM PARCEIROS"),
+  hr()) 
+ 
+fluidPage(("A tabela mostra as instituições parceiras e numero de parceiros por instituição"),
+           hr()) 
+  
+```
+
+### TABELA
+
+```{r}
+  DT::datatable(parceiros_inst) %>% formatStyle(
+columns = c(1,2,3,4,5), #specify columns to format
+fontFamily = "Arial",
+fontSize = "16px",
+color = '#008080',
+fontWeight = 'bold',
+paddingRight = "1em",
+borderRightWidth = "1px",
+borderRightStyle = "solid",
+borderRightColor = "white",
+borderBottomColor = "#ffffff",
+borderBottomStyle = "solid",
+borderBottomWidth = "1px",
+borderCollapse = "collapse",
+verticalAlign = "middle",
+textAlign = "center",
+wordWrap = "break-word",
+backgroundColor = '#e6e6e5')
+   
+```
+
+# OVERVIEW {data-icon="fa-signal" data-navmenu="COMUNIDADE"}
+
+## Comandos1 {.sidebar}
+
+```{r}
+fluidPage(
+  ("NESSE PAINEL APRESENTAMOS OS DADOS DAS SESSÕES COMUNITARIAS"),
+    
+   hr(),
+  radioButtons("regiaocheckxx", label =("Selecione a Região"), 
+               choices =unique(comunidaderesumo$Regiao))
+  )
+```
+
+## Column {data-width="200"}
+
+### TOTAL PARTICIPANTES
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+   summarize(avg_Number = sum(Total_participantes))
+valueBox(value = sum(quantidade), icon = "fa-users")
+})
+#Quantos produtores temos em Gorongosa do sexo Feminino
+```
+
+### ADULTOS DO SEXO MASCULINO
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  summarize(avg_Number = sum(NrAdultoMasculino))
+valueBox(value = sum(quantidade), icon = "fa-users")
+})
+```
+
+### ADULTOS DO SEXO FEMININO
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  summarize(avg_Number = sum(NrAdultoFeminino))
+valueBox(value = sum(quantidade), icon = "fa-users")
+})
+```
+
+### CRIANÇAS
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  summarize(avg_Number = sum(NrcriancaMasculino)+sum(NrcriancaFeminino))
+valueBox(value = sum(quantidade), icon = "fa-users" )
+})
+#, color ="#9442D4"
+```
+
+## Column {data-width="800"}
+
+### MEMBROS INFLUENTES PRESENTES
+
+```{r}
+ comunidadelista$name_influentes  <- NULL
+ 
+
+ DT::renderDT({
+datatable(comunidadelista %>%
+filter(Regiao %in% input$regiaocheckxx))  %>% formatStyle(
+columns = c(1,2,3,4,5,6), #specify columns to format
+fontFamily = "Arial",
+fontSize = "16px",
+color = '#008080',
+fontWeight = 'bold',
+paddingRight = "1em",
+borderRightWidth = "1px",
+borderRightStyle = "solid",
+borderRightColor = "white",
+borderBottomColor = "#ffffff",
+borderBottomStyle = "solid",
+borderBottomWidth = "1px",
+borderCollapse = "collapse",
+verticalAlign = "middle",
+textAlign = "center",
+wordWrap = "break-word",
+backgroundColor = '#e6e6e5')
+
+   
+   })   
+ 
+
+
+
+```
+
+# POR SESSÃO {data-icon="fa-signal" data-navmenu="COMUNIDADE"}
+
+## Comandos1 {.sidebar}
+
+```{r}
+fluidPage(
+  ("NESSE PAINEL APRESENTAMOS OS DADOS DAS SESSÕES COMUNITARIAS"),
+   hr(),
+  radioButtons("checkNrsessao", label =("Selecione numero da sessao"), 
+               choices =unique(comunidaderesumo$Nrsessao)),
+   hr(),
+  radioButtons("regiaocheckxx", label =("Selecione a Região"), 
+               choices =unique(comunidaderesumo$Regiao))
+  )
+```
+
+## Column {data-width="200"}
+
+### TOTAL PARTICIPANTES
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  filter(Nrsessao %in% input$checkNrsessao, Regiao%in% input$regiaocheckxx) %>%   summarize(avg_Number = sum(Total_participantes))
+valueBox(value = quantidade, icon = "fa-users")
+})
+#Quantos produtores temos em Gorongosa do sexo Feminino
+```
+
+### ADULTOS DO SEXO MASCULINO
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  filter(Nrsessao %in% input$checkNrsessao, Regiao %in% input$regiaocheckxx) %>%
+  summarize(avg_Number = sum(NrAdultoMasculino))
+valueBox(value = quantidade, icon = "fa-users")
+})
+```
+
+### ADULTOS DO SEXO FEMININO
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  filter(Nrsessao %in% input$checkNrsessao, Regiao %in% input$regiaocheckxx) %>%
+  summarize(avg_Number = sum(NrAdultoFeminino))
+valueBox(value = quantidade, icon = "fa-users")
+})
+```
+
+### CRIANÇAS
+
+```{r}
+renderValueBox({
+quantidade <- comunidaderesumo %>%
+  na.omit() %>%
+  filter(Nrsessao %in% input$checkNrsessao, Regiao %in% input$regiaocheckxx) %>%
+  summarize(avg_Number = sum(NrcriancaMasculino)+sum(NrcriancaFeminino))
+valueBox(value = quantidade, icon = "fa-users" )
+})
+#, color ="#9442D4"
+```
+
+## Column {data-width="800"}
+
+### MEMBROS INFLUENTES PRESENTES
+
+```{r}
+ comunidadelista$name_influentes  <- NULL
+
+ 
+ DT::renderDT({
+  datatable(comunidadelista %>% 
+filter(Nrsessao %in% input$checkNrsessao, Regiao %in% input$regiaocheckxx))  %>% formatStyle(
+columns = c(1,2,3,4,5,6), #specify columns to format
+fontFamily = "Arial",
+fontSize = "16px",
+color = '#008080',
+fontWeight = 'bold',
+paddingRight = "1em",
+borderRightWidth = "1px",
+borderRightStyle = "solid",
+borderRightColor = "white",
+borderBottomColor = "#ffffff",
+borderBottomStyle = "solid",
+borderBottomWidth = "1px",
+borderCollapse = "collapse",
+verticalAlign = "middle",
+textAlign = "center",
+wordWrap = "break-word",
+backgroundColor = '#e6e6e5')})
+```
