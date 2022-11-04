@@ -8,10 +8,12 @@ library(tidyverse)
 library(readxl)
 library(knitr)
 library(ggvis)
+library(esquisse)
 
 
 #Importar base de dado de realiza
 Resultados_Realiza <- read_excel("Resultados__Realiza.xls")
+
 #esquisser(localdate)
 ## Grafico de Geografia, formalização e 
 ## lucro (áreas para próxima mobilização com o perfil necessário)
@@ -98,7 +100,7 @@ ggplot(formal) +
     panel.grid.minor = element_blank()
   )+
   ggtitle("Business is formal")
-+guides(fill=guide_legend(""))
++guides(fill=guide_legend("sdfsdf"))
 
 
 
@@ -114,9 +116,9 @@ ggplot(formal) +
 ggplot(lucro) +
  aes(x = local, y = round(perc, digits = 1), fill = Lucro) +
  geom_col() + 
-  geom_text(aes(label=round(perc, digits = 1)), size = 3, position = position_stack(vjust = 0.5))+
+  geom_text(aes(label=round(perc, digits = 1)), size = 3, position = position_dodge(0.9))+
   scale_fill_hue(direction = 1) + ylab("Percentagem") + 
-  xlab("Lucro das empreendedoras") + theme_bw() + 
+  xlab("Lucro das empreendedoras") + theme_bw()+guides(fill=guide_legend("")) + 
   theme(
     plot.title = element_text(face = "bold", size = 12),
     legend.background = element_rect(fill = "white", size = 4, colour = "white"),
@@ -124,6 +126,35 @@ ggplot(lucro) +
     axis.ticks = element_line(colour = "grey70", size = 0.2),
     panel.grid.major = element_line(colour = "grey70", size = 0.2),
     panel.grid.minor = element_blank()
-  )+ggtitle("Monthly profit of the mobilized entrepreneurs")
-+guides(fill=guide_legend(""))
+  )+ggtitle("Profit from mobilized women entrepreneurs")
+
+
+
+
+## 
+Resultados_Realiza %>%
+  filter(Dona_negocio %in% "SIM") %>%  group_by(Lucro,tem_trabalhador ) %>%
+  summarise(n = n()) %>%   mutate(perc=(n/sum(n))*100) %>% 
+  mutate(percentagem=round(perc, digits = 3) ) %>% 
+  mutate(Gpercentagem="percentagem"+"%" ) %>% 
+  ggplot() +
+  aes(x = Lucro, y=percentagem,  fill =tem_trabalhador ) +
+  geom_col(position = "dodge", stat="identity") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()+scale_y_continuous(limits=c(0,100))+
+  geom_text(aes(label=Gpercentagem), size = 4,position = position_dodge(0.9), vjust=-0.25)+
+  scale_fill_hue(direction = 1) + ylab("Percentagem") + 
+  xlab("Lucro das empreendedoras") + theme_bw()+guides(fill=guide_legend("")) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+guides(fill=guide_legend("Tem Trabalhador?"))
+ 
+
  
