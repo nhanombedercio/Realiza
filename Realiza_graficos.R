@@ -164,6 +164,7 @@ ggplot(Resultados_Realiza) +
   geom_boxplot() +scale_x_discrete(limits=c(0 ,2 ,4 ,6 ,8 ,10))+  
   scale_fill_hue(direction = 1) + ylab("Seu negocio esta registado?") + 
   xlab("Tempo no negocio (Anos)") + theme_bw()+
+ 
   guides(fill=guide_legend("")) + 
   theme(
     plot.title = element_text(face = "bold", size = 12),
@@ -178,6 +179,25 @@ ggplot(Resultados_Realiza) +
 
 ##Rede socil vs lucro
 
-esquisser(Resultados_Realiza)
+Resultados_Realiza %>%
+  filter(Dona_negocio %in% "SIM")%>%  group_by(Lucro, rede_social) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>%
+  ggplot() +aes(x = Lucro, y=perc,fill = rede_social) +
+  geom_col()  +  
+  scale_fill_hue(direction = 1) + ylab("Percentagem") + 
+  xlab("Lucro (meticais)") +
+  geom_text(aes(label=round(perc, digits = 0)), size = 4,position = position_stack(vjust = 0.5)) 
++theme_bw()+
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+guides(fill=guide_legend("Seu negócio usa rede social,\n email ou website para vender\n ou comunicar com clientes?"))
++ scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
+
 
  
