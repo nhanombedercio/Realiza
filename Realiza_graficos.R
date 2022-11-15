@@ -10,11 +10,11 @@ library(knitr)
 library(ggvis)
 library(esquisse)
 
+ 
 
 #Importar base de dado de realiza
 Resultados_Realiza <- read_excel("Resultados__Realiza.xls")
-
-#esquisser(localdate)
+Selecionadas_Realiza <- read_excel("Selecionadas__Realiza.xls")
 ## Grafico de Geografia, formalização e 
 ## lucro (áreas para próxima mobilização com o perfil necessário)
 
@@ -44,9 +44,7 @@ ggplot(donaNegocio) +
     panel.grid.minor = element_blank()
   )+   guides(fill=guide_legend("Are you a business owner?"))
   
-  
-  
-
+   
  
 localdate %>%
  filter(Dona_negocio %in% "SIM") %>%
@@ -79,10 +77,12 @@ formal <- Resultados_Realiza %>%
 lucro <- Resultados_Realiza %>%
   filter(Dona_negocio %in% "SIM"  ) %>%
   group_by(local,  Lucro) %>%
-  summarise(n = n()) %>%   mutate(perc=(n/sum(n))*100) %>% 
-   mutate(percentagem=round(perc, digits = 3) )
-
-
+  summarise(n = n()) %>%  
+  mutate(perc=(n/sum(n))*100) %>% 
+  mutate(percentagem=round(perc, digits = 1) )%>% 
+  mutate(percentagem1= as.character(percentagem)) %>%
+  mutate(simb= "%" ) %>% 
+  bind_rows(percentagem1,simb)  
  
 
 ggplot(formal) +
@@ -131,7 +131,7 @@ ggplot(lucro) +
 
 
 
-## 
+##ucro,tem_trabalhador 
 Resultados_Realiza %>%
   filter(Dona_negocio %in% "SIM") %>%  group_by(Lucro,tem_trabalhador ) %>%
   summarise(n = n()) %>%   mutate(perc=(n/sum(n))*100) %>% 
@@ -164,7 +164,6 @@ ggplot(Resultados_Realiza) +
   geom_boxplot() +scale_x_discrete(limits=c(0 ,2 ,4 ,6 ,8 ,10))+  
   scale_fill_hue(direction = 1) + ylab("Seu negocio esta registado?") + 
   xlab("Tempo no negocio (Anos)") + theme_bw()+
- 
   guides(fill=guide_legend("")) + 
   theme(
     plot.title = element_text(face = "bold", size = 12),
@@ -181,13 +180,11 @@ ggplot(Resultados_Realiza) +
 
 Resultados_Realiza %>%
   filter(Dona_negocio %in% "SIM")%>%  group_by(Lucro, rede_social) %>%
-  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>% mutate(percentagem=as.character(perc)) %>% 
   ggplot() +aes(x = Lucro, y=perc,fill = rede_social) +
-  geom_col()  +  
-  scale_fill_hue(direction = 1) + ylab("Percentagem") + 
-  xlab("Lucro (meticais)") +
-  geom_text(aes(label=round(perc, digits = 0)), size = 4,position = position_stack(vjust = 0.5)) 
-+theme_bw()+
+  geom_col()+scale_fill_hue(direction = 1) + ylab("Percentagem") + 
+  xlab("Lucro (meticais)") +guides(fill=guide_legend("Seu negócio usa rede social, \n email ou website para vender \n ou comunicar com clientes?"))+ 
+  geom_text(aes(label=round(perc, digits = 0)), size = 4,position = position_stack(vjust = 0.5))+theme_bw()+ 
   theme(
     plot.title = element_text(face = "bold", size = 12),
     legend.background = element_rect(fill = "white", size = 4, colour = "white"),
@@ -196,8 +193,151 @@ Resultados_Realiza %>%
     #axis.text.x = element_text(angle = 45, hjust = 1),
     panel.grid.major = element_line(colour = "grey70", size = 0.2),
     panel.grid.minor = element_blank()
-  )+guides(fill=guide_legend("Seu negócio usa rede social,\n email ou website para vender\n ou comunicar com clientes?"))
-+ scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
-
+  )+scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
 
  
+##Ano de negocio lucro
+ 
+Resultados_Realiza %>%
+ filter(Dona_negocio %in% "SIM") %>%
+ ggplot() +
+ aes(x = Tempo_Negocio, y = Lucro,fill=Lucro ) +
+ geom_boxplot() +scale_fill_hue(direction = 1) +
+  xlab("Tempo de negocio (ano)")+scale_x_discrete(limits=c(0 ,2 ,4 ,6 ,8 ,10))+theme_bw()+
+   theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+scale_y_discrete(labels = function(y) str_wrap(y, width = 20))
+
+
+###Selecionadas
+
+ 
+Selecionadas_Realiza %>%  group_by(Local) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>%
+ggplot() +  aes(x = Local, y=n, fill=Local) +
+  geom_col() +
+  geom_text(aes(label=n), size = 4,position = position_stack(vjust = 0.5))+ 
+  scale_y_continuous(limits=c(0 ,1500))+
+  scale_fill_hue(direction = 1) + ylab("Nr Empreendedoras") + xlab("")  + theme_bw() + 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="none",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+guides(fill=guide_legend("Local"))+
+  ggtitle("Selected Entrepreneurs")
+
+##PERFIL 
+Selecionadas_Realiza %>% group_by(Local, Perfil) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100)%>%
+  ggplot() +
+  aes(x = Local, y=perc, fill = Perfil) +
+  geom_col() +
+  geom_text(aes(label=round(perc,digits = 0)), size = 4,position = position_stack(vjust = 0.5))+ 
+  scale_y_continuous(limits=c(0 ,100))+
+  scale_fill_hue(direction = 1) + ylab("Percentagem") + xlab("")  + theme_bw() + 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="none",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+guides(fill=guide_legend("Perfil"))+
+  ggtitle("Business profile of the selected companies")
+
+ 
+###Lucro das selecionadas por Cidade
+Selecionadas_Realiza %>%
+  group_by(local, Lucro) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>% 
+  mutate(percentagem=round(perc, digits = 0) ) %>% 
+  ggplot() +
+  aes(x = local, y=percentagem, fill =Lucro) +
+  geom_col() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()+scale_y_continuous(limits=c(0,100))+  
+  geom_text(aes(label=percentagem), size = 4,position = position_stack(0.5), vjust=-0.5)+
+  scale_fill_hue(direction = 1) + ylab("Percentagem") + 
+  xlab("Cidade de Residencia") + theme_bw()+guides(fill=guide_legend("")) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+
+  ggtitle("Profit of the selected entrepreneurs ")
+#+
+##  scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+guides(fill=guide_legend("Tem Trabalhador?"))
+#esquisser(Selecionadas_Realiza)
+
+### NEGOCIO FORMAL DAS SELECIONADAS
+Selecionadas_Realiza %>%
+  group_by(local, Negóciocomregisto) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>% 
+  mutate(percentagem=round(perc, digits = 0) ) %>% 
+  ggplot() +
+  aes(x = local, y=percentagem, fill =Negóciocomregisto) +
+  geom_col() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()+scale_y_continuous(limits=c(0,100))+  
+  geom_text(aes(label=percentagem), size = 4,position = position_stack(0.5), vjust=-0.5)+
+  scale_fill_hue(direction = 1) + ylab("Percentagem") + 
+  xlab("Cidade de Residencia") + theme_bw()+guides(fill=guide_legend("Teu negócio esta registado?")) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+
+  ggtitle("Formalizing the business of women entrepreneurs")
+
+
+### Trabalhador vs Lucro
+Selecionadas_Realiza  %>%
+  group_by(Lucro,Temtrabalhador) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100) %>% 
+  mutate(percentagem=round(perc, digits = 0) ) %>% 
+  ggplot() +
+  aes(x =Lucro , y=percentagem, fill=Temtrabalhador) +
+  geom_col() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()+scale_y_continuous(limits=c(0,100))+  
+  geom_text(aes(label=percentagem), size = 4,position = position_stack(0.2), vjust=-0.5)+
+  scale_fill_hue(direction = 1) + ylab("Percentagem") + 
+  xlab("Lucro") + theme_bw()+guides(fill=guide_legend("Tem trabalhador?")) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  )+scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+  ggtitle("Profit of women entrepreneurs with n/ and without workers")
+
+### Tempo vs registo
+ggplot(Selecionadas_Realiza) +
+  aes(
+    x = Tempo_Negocio,
+    y = Negóciocomregisto,
+    fill = Negóciocomregisto
+  ) +
+  geom_boxplot() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
