@@ -359,12 +359,22 @@ replace tiPo_negocio="ENTRETENIMENTO" if ind_Entretenimento==100 | ind_DESPORTO=
 replace tiPo_negocio="ESTETICA" if ind_Estetica==100
 replace tiPo_negocio="ALIMENTACAO" if ind_alimentacao==100
 
-
+gen varia_idade=""
+ replace varia_idade="[18 - 25]" if Idade<=25
+ replace varia_idade="[25 - 35]" if Idade<=35 & Idade>25
+ replace varia_idade="[35 - 45]" if Idade<=45 & Idade>35
+ replace varia_idade="[45 - 55]" if Idade<=55 & Idade>45
+ replace varia_idade="[55 - 65]" if Idade<=65 & Idade>55
+ replace varia_idade=">65" if Idade>=65
+ 
+ replace Idade=. if Idade<17
+ replace Idade=80 if Idade>80 & Idade!=.
+  
 
 	 export excel using "C:\Users\Dercio\Dropbox (OPML)\MIS\Marambe\Maputo\Data Management\08 Realiza\02 Data Clean\01 Registo\Resultados__Realiza.xls", firstrow(variables) replace
 	 export excel using "C:\Users\Dercio\Dropbox (OPML)\MIS\Marambe\Maputo\Data Management\08 Realiza\Realiza\Resultados__Realiza.xls", firstrow(variables) replace
 	 
-	 
+	 ex
 	 
 	 
 	 import excel "C:\Users\Dercio\Dropbox (OPML)\MIS\Marambe\Maputo\Data Management\08 Realiza\02 Data Clean\01 Registo\Realiza pre-selected candidates - 1st list.xls" , sheet("Sheet1") firstrow clear 
@@ -491,7 +501,14 @@ replace tiPo_negocio="ALIMENTACAO" if ind_alimentacao==100
 *graph export "$grafic/nivel_concluido.png", replace
 
 
-
+ gen varia_idade=""
+ replace varia_idade="[18 - 25]" if Idade<=25
+ replace varia_idade="[25 - 35]" if Idade<=35 & Idade>25
+ replace varia_idade="[35 - 45]" if Idade<=45 & Idade>35
+ replace varia_idade="[45 - 55]" if Idade<=55 & Idade>45
+ replace varia_idade="[55 - 65]" if Idade<=65 & Idade>55
+ replace varia_idade=">65" if Idade>=65
+ 
 
     
 	 	 export excel using "C:\Users\Dercio\Dropbox (OPML)\MIS\Marambe\Maputo\Data Management\08 Realiza\02 Data Clean\01 Registo\Selecionadas__Realiza.xls", firstrow(variables) replace

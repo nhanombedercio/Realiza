@@ -391,16 +391,24 @@ ggplot(Selecionadas_Realiza) +
 
   
   ###IDADE
+  IDADE <- Resultados_Realiza %>%
+    filter(Dona_negocio %in% "SIM" )
 
  
+ggplot(IDADE) +
+ aes(x = Idade, y = registo_negocio, fill = registo_negocio) +
+ geom_boxplot() +
+ scale_fill_hue(direction = 1) +
+ theme_minimal() +
+ facet_wrap(vars(local))+ggtitle("Idade das mobilizadas")
 
-ggplot(Selecionadas_Realiza) +
+ggplot(IDADE) +
  aes(x = Idade, y =local, fill=local) +
  geom_boxplot() +
  scale_fill_hue(direction = 1) +
- theme_minimal()
- 
-
+ theme_minimal()+
+  ggtitle("Idade das mobilizadas")
+   
 ##Tipo de negocio
 tab<- Selecionadas_Realiza  %>%
   group_by(tiPo_negocio,Lucro) %>%
