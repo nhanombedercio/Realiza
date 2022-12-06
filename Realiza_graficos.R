@@ -433,5 +433,56 @@ ggplot(tab) +
   )+scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
 
 
+#### ASSALARIADOS 
 
+mobi_assalariado<- Selecionadas_Realiza  %>%
+  group_by(trabalhador_salario) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100)
+
+
+library(ggplot2)
+
+ggplot(mobi_assalariado) +
+ aes(x = trabalhador_salario, y = perc, fill = trabalhador_salario) +
+ geom_col() +
+ scale_fill_hue(direction = 1) +
+ theme_minimal()+scale_fill_hue(direction = 1) + ylab("percentage") + 
+  xlab("Have salaried workers") +guides(fill=guide_legend("Have salaried workers"))+ 
+  geom_text(aes(label=round(perc, digits = 0)), size = 4,position = position_stack(vjust = 0.5))+theme_bw()+ 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    #legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  ) +scale_y_continuous(limits=c(0,100))
+ 
+
+#### ASSALARIADOS 
+
+mobizadas_assalariado<- Resultados_Realiza  %>%
+  group_by(trabalhador_salario) %>%
+  summarise(n = n()) %>% mutate(perc=(n/sum(n))*100)
+
+
+library(ggplot2)
+
+ggplot(mobizadas_assalariado) +
+  aes(x = trabalhador_salario, y = perc, fill = trabalhador_salario) +
+  geom_col() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()+scale_fill_hue(direction = 1) + ylab("percentage") + 
+  xlab("Have salaried workers") +guides(fill=guide_legend("Have salaried workers"))+ 
+  geom_text(aes(label=round(perc, digits = 0)), size = 4,position = position_stack(vjust = 0.5))+theme_bw()+ 
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.background = element_rect(fill = "white", size = 4, colour = "white"),
+    #legend.position="bottom",
+    axis.ticks = element_line(colour = "grey70", size = 0.2),
+    #axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major = element_line(colour = "grey70", size = 0.2),
+    panel.grid.minor = element_blank()
+  ) +scale_y_continuous(limits=c(0,100))
 
